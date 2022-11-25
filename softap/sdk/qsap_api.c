@@ -180,6 +180,10 @@ static struct Command cmd_list[eCMD_LAST] = {
     { "ssid2",                 NULL             },
     { "bridge",                NULL             },
     { "ctrl_interface",        NULL             },
+    { "sae_password",          NULL             },
+    { "sae_require_mfp",       NULL             },
+    { "sae_pwe",               NULL             },
+    { "transition_disable",    NULL             },
 };
 
 struct Command qsap_str[eSTR_LAST] = {
@@ -625,6 +629,16 @@ static void qsap_set_security_mode(s8 *pfile, u32 sec_mode, s8 *presp, u32 *plen
 
         else if(sec_mode == SEC_MODE_WPA_WPA2_PSK) {
             wpa_val = WPA_WPA2_IN_CONF_FILE;
+            rsn_status = ENABLE;
+        }
+
+        else if(sec_mode == SEC_MODE_OWE) {
+            wpa_val = WPA2_IN_CONF_FILE;
+            rsn_status = ENABLE;
+        }
+
+        else if(sec_mode == SEC_MODE_SAE) {
+            wpa_val = WPA2_IN_CONF_FILE;
             rsn_status = ENABLE;
         }
 
@@ -3309,6 +3323,12 @@ int qsapsetSoftap(int argc, char *argv[])
         else if(!strcmp(argv[6 + offset], "wpa2-psk"))
             sec = SEC_MODE_WPA2_PSK;
 
+        else if(!strcmp(argv[6 + offset], "owe"))
+            sec = SEC_MODE_OWE;
+
+        else if(!strcmp(argv[6 + offset], "sae"))
+            sec = SEC_MODE_SAE;
+
         qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s security_mode=%d",setCmd, sec);
     }
     else {
@@ -3339,6 +3359,93 @@ int qsapsetSoftap(int argc, char *argv[])
     if(strncmp("success", respbuf, rlen) != 0) {
         ALOGE("Failed to set passphrase \n");
         return -1;
+    }
+
+    if (sec == SEC_MODE_OWE) {
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s wpa_key_mgmt=OWE", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set wpa_key_mgmt \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s rsn_pairwise=CCMP", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set rsn_pairwise \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s transition_disable=8", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set transition_disable \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s ieee80211w=2", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set ieee80211w \n");
+                   return -1;
+           }
+    }
+    if (sec == SEC_MODE_SAE) {
+           if(argc > 7) {
+                   /* If the input passphrase is more than 63 characters, consider first 63 characters only*/
+                   if ( strlen(argv[7 + offset]) > 63 ) argv[7 + offset][63] = '\0';
+                   qsap_scnprintf(cmdbuf, CMD_BUF_LEN, "%s sae_password=%s",setCmd, argv[7 + offset]);
+           }
+           else {
+                   qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s sae_password=%s", setCmd, DEFAULT_PASSPHRASE);
+           }
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set sae_password \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s wpa_key_mgmt=SAE", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set wpa_key_mgmt \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s rsn_pairwise=CCMP", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set rsn_pairwise \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s sae_require_mfp=2", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set sae_require_mfp \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s sae_pwe=2", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set sae_pwe \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s transition_disable=1", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set transition_disable \n");
+                   return -1;
+           }
+
+           qsap_scnprintf(cmdbuf, sizeof(cmdbuf), "%s ieee80211w=2", setCmd);
+           (void) qsap_hostd_exec_cmd(cmdbuf, respbuf, &rlen);
+           if(strncmp("success", respbuf, rlen) != 0) {
+                   ALOGE("Failed to set ieee80211w \n");
+                   return -1;
+           }
     }
 
     rlen = RECV_BUF_LEN;

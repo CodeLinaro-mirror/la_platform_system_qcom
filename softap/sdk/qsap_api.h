@@ -348,6 +348,10 @@ typedef enum esap_cmd {
     eCMD_SSID2               = 74,
     eCMD_BRIDGE              = 75,
     eCMD_CTRL_INTERFACE      = 76,
+    eCMD_SAE_PASSWORD        = 77,
+    eCMD_SAE_REQUIRE_MFP     = 78,
+    eCMD_SAE_PWE             = 79,
+    eCMD_TRANSITION_DISABLE  = 80,
 
     eCMD_LAST     /** New command numbers should be added above this */
 } esap_cmd_t;
@@ -383,6 +387,8 @@ typedef enum sec_mode {
     SEC_MODE_WPA_PSK         = 2,
     SEC_MODE_WPA2_PSK        = 3,
     SEC_MODE_WPA_WPA2_PSK    = 4,
+    SEC_MODE_OWE             = 5,
+    SEC_MODE_SAE             = 6,
 
     SEC_MODE_INVALID
 } sec_mode_t;
