@@ -348,7 +348,7 @@ static s32 qsap_write_cfg(s8 *pfile, struct Command * pcmd, s8 *pVal, s8 *presp,
     s8 buf[MAX_CONF_LINE_LEN+1];
     s16 len, result = FALSE;
 
-    ALOGD("cmd=%s, Val:%s, INI:%ld \n", pcmd->name, pVal, inifile);
+    ALOGV("cmd=%s, Val:%s, INI:%ld \n", pcmd->name, pVal, inifile);
 
     /** Open the configuration file */
     fcfg = fopen(pfile, "r");
@@ -383,7 +383,7 @@ static s32 qsap_write_cfg(s8 *pfile, struct Command * pcmd, s8 *pVal, s8 *presp,
             if(pline[len] == '=') {
                 qsap_scnprintf(buf, sizeof(buf), "%s=%s\n", pcmd->name, pVal);
                 result = TRUE;
-                ALOGD("Updated:%s\n", buf);
+                ALOGV("Updated:%s\n", buf);
             }
         }
 
@@ -2636,7 +2636,7 @@ static void qsap_handle_set_request(s8 *pcmd, s8 *presp, u32 *plen)
     pVal++;
 
     if((cNum != eCMD_COMMIT) && (cNum != eCMD_RESET_TO_DEFAULT)) {
-        ALOGE("Cmd: %s Argument :%s \n", cmd_list[cNum].name, pVal);
+        ALOGV("Cmd: %s Argument :%s \n", cmd_list[cNum].name, pVal);
     }
     switch(cNum) {
         case eCMD_ADD_TO_ALLOW:
